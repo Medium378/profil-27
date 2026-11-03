@@ -1,0 +1,85 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+@theme {
+  --color-bg: #f3f1ec;
+  --color-surface: #fbfaf8;
+  --color-ink: #1c1b18;
+  --color-muted: #6e685f;
+  --color-faint: #8a847a;
+  --color-line: #e3ddd3;
+  --color-line-strong: #cfc7bb;
+  --color-accent: #1e3d38;
+  --color-accent-fg: #f6f4ef;
+  --color-ok: #1d6b45;
+  --color-ok-bg: #e7f3ec;
+  --color-bad: #8d342c;
+  --color-bad-bg: #f8ecea;
+  --color-wash: #ebe7e0;
+  --font-sans: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --shadow-sheet: 0 1px 0 rgba(28, 27, 24, 0.04), 0 12px 32px rgba(28, 27, 24, 0.05);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+.katex {
+  font-size: 1.05em;
+}
+
+.math-inline {
+  display: inline;
+}
+
+.math-display {
+  display: block;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Профиль 27",
+      "hasCanvas": false,
+      "bodyTextLen": 1461,
+      "bodyTextHash": "928b97be6eab77ed57f8909a9bb6fbf6a7df948527cb5f3a53ce05ad69bf9016",
+      "bodyTextPrefix": "Профиль 27 Тренажёр по демоверсии ЕГЭ · профильная математика 0/",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Профиль 27",
+      "hasCanvas": false,
+      "bodyTextLen": 1461,
+      "bodyTextHash": "928b97be6eab77ed57f8909a9bb6fbf6a7df948527cb5f3a53ce05ad69bf9016",
+      "bodyTextPrefix": "Профиль 27 Тренажёр по демоверсии ЕГЭ · профильная математика 0/",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
