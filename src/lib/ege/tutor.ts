@@ -16,3 +16,22 @@ export const askTutor = createServerFn({ method: "POST" })
     const { answerQuestion } = await import("./tutor.server");
     return answerQuestion(data);
   });
+
+export type GenerateSimilarInput = {
+  number: number;
+  topic: string;
+  topicId: string;
+  level: string;
+  skills: string[];
+  prompt: string;
+  answer: string;
+  solution: string;
+  points: number;
+};
+
+export const generateSimilar = createServerFn({ method: "POST" })
+  .validator((input: GenerateSimilarInput) => input)
+  .handler(async ({ data }) => {
+    const { generateSimilarProblem } = await import("./tutor.server");
+    return generateSimilarProblem(data);
+  });

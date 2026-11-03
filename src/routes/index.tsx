@@ -15,7 +15,7 @@ import {
 import { answersMatch } from "@/lib/ege/check";
 import { MathText } from "@/components/trainer/math-text";
 import { FigureView } from "@/components/trainer/figures";
-import { askTutor } from "@/lib/ege/tutor";
+import { askTutor, generateSimilar } from "@/lib/ege/tutor";
 import type { Problem } from "@/lib/ege/types";
 
 export const Route = createFileRoute("/")({
@@ -48,16 +48,21 @@ function TrainerApp() {
   const [tutorError, setTutorError] = useState<string | null>(null);
   const [view, setView] = useState<"home" | "session" | "stats">("home");
   const [emptyHint, setEmptyHint] = useState(false);
+  const [generated, setGenerated] = useState<Problem | null>(null);
+  const [genLoading, setGenLoading] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
 
   useEffect(() => {
     void useTrainer.persist.rehydrate();
   }, []);
 
-  const currentProblem: Problem | null = useMemo(() => {
+  const baseProblem: Problem | null = useMemo(() => {
     if (!session) return null;
     const id = session.ids[session.index];
     return problemById(id) ?? null;
   }, [session]);
+
+  const currentProblem: Problem | null = generated ?? baseProblem;
 
   const lastResults = useMemo(() => lastResultByProblem(attempts), [attempts]);
   const stats = useMemo(() => topicStats(attempts), [attempts]);
@@ -73,6 +78,7 @@ function TrainerApp() {
       .sort(() => Math.random() - 0.5);
     if (ids.length === 0) return;
     startSession("drill", ids);
+    setGenerated(null);
     setShowSolution(false);
     setTutorOpen(false);
     setTutorHistory([]);
@@ -90,6 +96,7 @@ function TrainerApp() {
     }
     if (ids.length === 0) return;
     startSession("mock", ids);
+    setGenerated(null);
     setShowSolution(false);
     setTutorOpen(false);
     setTutorHistory([]);
@@ -108,6 +115,7 @@ function TrainerApp() {
     ].slice(0, 30);
     if (wrongIds.length === 0) return;
     startSession("mistakes", wrongIds);
+    setGenerated(null);
     setShowSolution(false);
     setTutorOpen(false);
     setTutorHistory([]);
@@ -133,16 +141,76 @@ function TrainerApp() {
     if (!session) return;
     if (session.index + 1 >= session.ids.length) {
       leaveSession();
+      setGenerated(null);
       setView("stats");
       return;
     }
     setIndex(session.index + 1);
+    setGenerated(null);
     setShowSolution(false);
     setTutorOpen(false);
     setTutorHistory([]);
     setTutorQ("");
     setTutorError(null);
     setEmptyHint(false);
+    setGenError(null);
+  }
+
+  async function handleGenerate() {
+    if (!baseProblem || genLoading) return;
+    setGenLoading(true);
+    setGenError(null);
+    try {
+      const res = await generateSimilar({
+        data: {
+          number: baseProblem.number,
+          topic: baseProblem.topic,
+          topicId: baseProblem.topicId,
+          level: baseProblem.level,
+          skills: baseProblem.skills,
+          prompt: baseProblem.prompt,
+          answer: baseProblem.answerDisplay,
+          solution: baseProblem.solution.join("\n"),
+          points: baseProblem.points,
+        },
+      });
+      if (!res.ok) {
+        setGenError(res.error);
+        return;
+      }
+      const id = `gen-${baseProblem.number}-${Date.now()}`;
+      const problem: Problem = {
+        id,
+        number: baseProblem.number,
+        variant: 99,
+        topicId: baseProblem.topicId,
+        topic: baseProblem.topic,
+        skills: baseProblem.skills,
+        points: baseProblem.points,
+        level: baseProblem.level,
+        prompt: res.problem.prompt,
+        fields: [
+          {
+            id: "ans",
+            label: "Ответ",
+            placeholder: "число",
+            accept: res.problem.accept,
+          },
+        ],
+        answerDisplay: res.problem.answerDisplay,
+        solution: res.problem.solution,
+      };
+      setGenerated(problem);
+      setShowSolution(false);
+      setTutorOpen(false);
+      setTutorHistory([]);
+      setEmptyHint(false);
+      setGenError(null);
+    } catch {
+      setGenError("Не удалось сгенерировать. Попробуй ещё раз.");
+    } finally {
+      setGenLoading(false);
+    }
   }
 
   async function sendTutor() {
@@ -189,6 +257,8 @@ function TrainerApp() {
               type="button"
               onClick={() => {
                 leaveSession();
+                setGenerated(null);
+                setGenError(null);
                 setView("home");
               }}
               className="text-sm text-muted hover:text-ink"
@@ -231,6 +301,34 @@ function TrainerApp() {
           <div className="overflow-x-auto rounded-xl border border-line bg-surface p-5 shadow-sheet">
             <MathText text={currentProblem.prompt} className="text-lg leading-relaxed" />
             {currentProblem.figure && <FigureView id={currentProblem.figure} />}
+            {generated && (
+              <p className="mt-3 text-xs text-muted">Сгенерированный вариант · можно решать как обычное задание</p>
+            )}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={genLoading || !!isChecked}
+              className="rounded-lg border border-line px-3 py-1.5 text-sm text-muted transition hover:border-accent hover:text-ink disabled:opacity-50"
+            >
+              {genLoading ? "Генерирую…" : generated ? "Ещё похожее" : "Сгенерировать похожее"}
+            </button>
+            {generated && !isChecked && (
+              <button
+                type="button"
+                onClick={() => {
+                  setGenerated(null);
+                  setShowSolution(false);
+                  setGenError(null);
+                }}
+                className="text-sm text-muted hover:text-ink"
+              >
+                Вернуть исходное
+              </button>
+            )}
+            {genError && <span className="text-sm text-bad">{genError}</span>}
           </div>
 
           <div className="mt-6 space-y-4">
